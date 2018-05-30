@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HTML LIVE EDITOR</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="node_modules/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script
+        src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            #container {
+                width: 100%;
+                height: 600px;
+                margin: 0 auto;
+                position: relative;
+            }
+            #editor_container, #output_container, #resize {
+                position: absolute;
+                top: 0;
+                height: 95%;
+                width: 50%;
+                border: 1px solid #ccc;
+            }
+            #editor_container {
+                left: 0;
+                border-right: 0;
+            }
+            #editor{
+                position: absolute;
+                width:100%;
+                height: 100%;
+            }
+
+            #output_container {
+                right: 0;
+                background-color: #FFFFFF;
+                border-left: 0;
+                border-bottom: 0;
+            }
+            #resize {
+                left: 50%;
+                width: 5px;
+                height: 100%;
+                background-color: #f1f1f1;
+                cursor: col-resize;
+            }
+            #output{
+                position: absolute;
+                height: 100%;
+                width: 100%;
+            }
+            #error_container{
+                display: flex;
+                position: absolute;
+                bottom: 10px;
+                display: none;
+            }
+            #error_image{
+                background-image: url('error.png');
+                width:100px;
+                height:90px;
+                background-repeat: no-repeat;
+                background-size: cover;
+                overflow: hidden;
+            }
+            #error_message{
+                background: #ffb6b6;
+                width: 300px;
+                margin-top: 10px;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            #iframe_output{
+                width:100%;
+                height: 100%;
+            }
+            .header{
+                width: 100%;
+                height: 30px;
+                background: #f1f1f1;
+            }
+
+            .header > ul{
+                margin:0px;
+                float:right;
+                margin-top:6px;
+                margin-right: 10px;
+            }
+
+            .header > ul > li{
+                list-style-type: none;
+                float: left;
+                padding-right: 15px;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            .header > .heading{
+                margin: 0px;
+                padding-left: 15px;
+                padding-top: 2px;
+                float:left;
+                color: #1295c9;
+                font-family: cursive;
+            }
+            .full_screen{
+                width: 100% !important;
+                position: fixed !important;
+                top:0;
+                left:0;
+                right:0;
+                bottom:0;
+                z-index: 99999 !important;
+            }
+            #snackbar {
+                visibility: hidden;
+                min-width: 250px;
+                margin-left: -125px;
+                background-color: #333;
+                color: #fff;
+                text-align: center;
+                border-radius: 2px;
+                padding: 16px;
+                position: fixed;
+                z-index: 99999;
+                left: 50%;
+                bottom: 30px;
+                font-size: 17px;
+            }
+            #snackbar.show {
+                visibility: visible;
+                -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            }
+
+            @-webkit-keyframes fadein {
+                from {bottom: 0; opacity: 0;} 
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @-webkit-keyframes fadeout {
+                from {bottom: 30px; opacity: 1;} 
+                to {bottom: 0; opacity: 0;}
+            }
+
+            @keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 0; opacity: 0;}
+            }
+
+        </style>        
+    </head>
+    <body>
+        <div id='container'>
+            <div id="editor_container">
+                <div class="header">
+                    <p class="heading">HTML Live Editor</p>
+                    <ul>
+                        <!--<li>  <i title="save" class="fa fa-save"></i></li>-->
+                        <li> <i onclick="copy()" title="copy" class="fa fa-copy"></i></li>
+                        <li> <i onclick="clearEditor()" title="clear" class="fa fa-refresh"></i></li>
+                        <li><i onclick="fullScreenEditor()" class="fa fa-expand"></i></li>
+                    </ul>
+                </div>
+                <div id='editor' onkeyup="run()"></div>
+            </div>
+            <div id='output_container'>
+                <div class="header">
+                    <ul>
+                        <li><i onclick="fullscreenOutput()" class="fa fa-expand"></i></li>
+                    </ul>
+                </div>
+                <div id="output"></div>
+                <div id="error_container">
+                    <div id="error_image"></div>
+                    <div id="error_message"></div>
+                </div>
+            </div>
+            <div id='resize'></div>
+        </div>
+        <div id="snackbar"></div>
+
+    </body>
+
+    <script>
+        $(function () {
+
+            var editor = parseInt($('#editor_container').width(), 10),
+                    output = parseInt($('#output_container').width(), 10),
+                    resize = parseInt($('#resize').width(), 10),
+                    minwidth = parseInt((editor + output + resize) * 10 / 100, 10),
+                    offset = $('#container').offset(),
+                    splitter = function (event, ui) {
+                        var editorWidth = parseInt(ui.position.left),
+                                outputWidth = editor + output - editorWidth;
+                        $('#editor_container').css({width: editorWidth});
+                        $('#output_container').css({width: outputWidth});
+                    };
+            $('#resize').draggable({
+                axis: 'x',
+                containment: [
+                    offset.left + minwidth,
+                    offset.top,
+                    offset.left + editor + output - minwidth,
+                    offset.top + $('#container').height()
+                ],
+                drag: splitter
+            });
+        });
+
+
+
+        var editor = ace.edit("editor");
+        editor.session.setMode("ace/mode/html");
+
+
+        editor.setOptions({
+            showPrintMargin: false,
+        });
+
+        editor.getSession().on("changeAnnotation", function () {
+            var annot = editor.getSession().getAnnotations();
+
+            if (annot.hasOwnProperty(0)) {
+                var error = annot[0].text + "on line " + " " + annot[0].row;
+                $('#error_container').css({'display': 'flex'});
+                $('#error_message').text(error);
+            } else {
+                $('#error_message').text("");
+                $('#error_container').css({'display': 'none'});
+            }
+
+        });
+
+        var client = new XMLHttpRequest();
+        client.open('GET', 'test.html');
+        client.onreadystatechange = function () {
+            editor.setValue(client.responseText);
+            run();
+        }
+        client.send();
+
+        var run = function () {
+
+            var iframe = document.createElement("iframe");
+            iframe.setAttribute("frameborder", "0");
+            iframe.setAttribute("id", "iframe_output");
+            iframe.setAttribute("name", "iframe_output");
+
+            document.getElementById('output').innerHTML = "";
+            document.getElementById('output').appendChild(iframe);
+
+            var iframeWindow = (iframe.contentWindow) ? iframe.contentWindow : (iframe.contentDocument.document) ? iframe.contentDocument.document : iframe.contentDocument;
+            iframeWindow.document.open();
+            iframeWindow.document.write(editor.getValue());
+            iframeWindow.document.close();
+        }
+        run();
+
+        var fullScreenEditor = function () {
+            $("#editor_container").toggleClass('full_screen');
+            $(this).toggleClass('fa-compress');
+            $(this).toggleClass('fa-expand');
+        }
+
+
+        var fullscreenOutput = function () {
+            $("#output_container").toggleClass('full_screen');
+            $(this).toggleClass('fa-compress');
+            $(this).toggleClass('fa-expand');
+            $('#error_message').text("");
+            $('#error_container').css({'display': 'none'});
+        }
+
+        var clearEditor = function () {
+            editor.setValue("");
+            $('#error_message').text("");
+            $('#error_container').css({'display': 'none'});
+            run();
+        }
+        var showSnackbar = function (message) {
+            var snackbar = document.getElementById("snackbar");
+            snackbar.innerText = message;
+            snackbar.className = "show";
+            setTimeout(function () {
+                snackbar.className = snackbar.className.replace("show", "");
+            }, 3000);
+        }
+
+        var copy = function () {
+            var sel = editor.selection.toJSON();
+            editor.selectAll();
+            editor.focus();
+            document.execCommand('copy');
+            editor.selection.fromJSON(sel);
+            showSnackbar("Copied!");
+        }
+
+
+
+
+
+    </script>
+</html>
