@@ -1,37 +1,12 @@
-## Welcome to GitHub Pages
+## HTML LIVE EDITOR
 
-You can use the [editor on GitHub](https://github.com/Murthy-Adapa/html-live-editor/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This is a live HTML editor where you can write the code (HTML, CSS, and Javascript) and see the output at the same time. The output screen is completely responsive, you can check the output for different resolutions:)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Demo
 
-### Markdown
+click [here](https://murthy-adapa.github.io/html-live-editor/).
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
-```markdown
-Syntax highlighted code block
+### Want to contribute?
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Murthy-Adapa/html-live-editor/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+If you want to contribute to a project and make it better, your help is very welcome. Contributing is also a great way to learn more about social coding on Github, new technologies and and their ecosystems and how to make constructive, helpful bug reports, feature requests and the noblest of all contributions: a good, clean pull request.
