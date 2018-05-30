@@ -216,11 +216,15 @@
             });
         });
 
-
-
         var editor = ace.edit("editor");
         editor.session.setMode("ace/mode/html");
-
+        editor.setValue("<!DOCTYPE html>"
+                + "\n<html>"
+                + "\n\t<body>"
+                + "\n\t\t<h1>HEllo!</h1>"
+                + "\n\t\t<img src=''>"
+                + "\n\t</body>"
+                + "\n</html>");
 
         editor.setOptions({
             showPrintMargin: false,
@@ -239,14 +243,6 @@
             }
 
         });
-
-        var client = new XMLHttpRequest();
-        client.open('GET', 'test.html');
-        client.onreadystatechange = function () {
-            editor.setValue(client.responseText);
-            run();
-        }
-        client.send();
 
         var run = function () {
 
